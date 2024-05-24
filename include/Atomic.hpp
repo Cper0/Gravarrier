@@ -5,13 +5,21 @@ namespace sha
 	class Atomic
 	{
 	public:
-		Atomic(float p, float rad, float mass);
+		using value_t = double;
 
-		void force(const Atomic& t);
+		Atomic(value_t p, value_t m, value_t v);
+
+		void force(value_t f, const Atomic& t);
+
+		value_t p() const noexcept { return pos; }
 
 	private:
-		float x;
-		float r;
-		float m;
+		value_t dist(value_t x) const;
+		value_t derivate(value_t x) const;
+		value_t length(value_t s, value_t t) const;
+
+		value_t pos;
+		value_t mass;
+		value_t vari;
 	};
 }
