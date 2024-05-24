@@ -5,6 +5,7 @@ project(Phys)
 
 add_executable(Phys
 	src/main.cpp
+	src/Atomic.cpp
 )
 
 target_include_directories(Phys PUBLIC include)
