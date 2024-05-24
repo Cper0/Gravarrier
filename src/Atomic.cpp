@@ -1,9 +1,27 @@
 #include"Atomic.hpp"
-#include<cmath>
-#include<iostream>
 
 namespace sha
 {
+	double slope(double x, const Atomic& a, const Atomic& b)
+	{
+		const double ax = x - a.p();
+		const double bx = x - b.p();
+		return (a.dist(ax + EPSILON) + b.dist(bx + EPSILON) - a.dist(ax) - b.dist(bx)) / EPSILON;
+	}
+	
+	double arc_length(double s, double t, const Atomic& a, const Atomic& b)
+	{
+		auto integ = [&](double x)
+		{
+			const double df = slope(x, a, b);
+			const double b = 1.0 + df * df;
+			const double y = 2.0f / 3.0f * b * std::sqrt(b);
+			return y;
+		};
+
+		return std::abs(integ(t)) + std::abs(integ(s));
+	}
+
 	Atomic::Atomic(value_t p, value_t m, value_t v)
 	{
 		pos = p;
@@ -13,23 +31,21 @@ namespace sha
 
 	void Atomic::force(value_t f, const Atomic& b)
 	{
-		const auto n = pos - b.p();
-
-		value_t s = n;
-		value_t t = n + f;
+		value_t s = pos;
+		value_t t = pos + f;
 		for(int i = 0; i < 10; i++)
 		{
 			const auto m = (s + t) / 2;
-			const auto L = b.length(n, m);
+			const auto L = arc_length(pos, m, *this, b);
 
 			if(L > std::abs(f)) t = m;
 			else s = m;
 		}
 
 		const auto q = (s + t) / 2;
-		const auto d = derivate(q);
+		const auto d = slope(q, *this, b);
 
-		pos = b.p() + q - d;
+		pos = q - d;
 	}
 
 	Atomic::value_t Atomic::length(value_t a, value_t b) const
@@ -52,9 +68,7 @@ namespace sha
 
 	Atomic::value_t Atomic::derivate(value_t x) const
 	{
-		constexpr float eps = 0.001f;
-
-		const float df = (dist(x + eps) - dist(x)) / eps;
+		const float df = (dist(x + EPSILON) - dist(x)) / EPSILON;
 		return df;
 	}
 }
