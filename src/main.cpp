@@ -3,18 +3,6 @@
 #include"Const.hpp"
 
 constexpr float r = 3;
-constexpr double ALPHA = 5;
-
-sha::Atomic a(320, 10, 1);
-sha::Atomic b(100, 10, 1);
-
-double func(double x)
-{
-	const double ax = x - a.p();
-	const double bx = x - b.p();
-	return a.dist(ax) + b.dist(bx);
-}
-
 
 void Main()
 {
@@ -22,32 +10,51 @@ void Main()
 
 	const JSON json = JSON::Load(U"settings.json");
 
-	const float f = json[U"f"].get<float>();
+	const double af = json[U"a_force"].get<double>();
+	const double ah = json[U"a_height"].get<double>();
+	const double ad = json[U"a_delta"].get<double>();
+	const double ax = json[U"a_x"].get<double>();
 
+	const double bf = json[U"b_force"].get<double>();
+	const double bh = json[U"b_height"].get<double>();
+	const double bd = json[U"b_delta"].get<double>();
+	const double bx = json[U"b_x"].get<double>();
+
+	sha::Atomic a(ax, ah, ad);
+	sha::Atomic b(bx, bh, bd);
+
+	auto func = [&](double x) -> double
+	{
+		const double ax = x - a.p();
+		const double bx = x - b.p();
+		return a.dist(ax) + b.dist(bx);
+	};
 
 
 	while(System::Update())
 	{
-		b.force(1, a);
-		if(KeyLeft.pressed())
-		{
-			a.force(-f, b);
-		}
-		if(KeyRight.pressed())
-		{
-			a.force(f, b);
-		}
+		double f = 0;
+		if(KeyLeft.pressed()) f = -af;
+		if(KeyRight.pressed()) f = af;
+
+		const double m1 = a.force(f, b);
+		const double m2 = b.force(bf, a);
+
+		a.move(m1);
+		b.move(m2);
+
+
 
 		LineString points;
 		for(int i = 1; i < 1000; i++)
 		{
 			const double x = 640.0 * i / 1000;
 			const double y = func(x);
-			points << Vec2{x, 200 + y};
+			points << Vec2{x, 200 - y};
 		}
 		points.draw(2, ColorF{1.0f});
 
-		Circle{a.p(), 200, r}.draw(ColorF{1, 0, 0});
-		Circle{b.p(), 200, r}.draw(ColorF{0, 0, 1});
+		Circle{a.p(), 200 - func(a.p()), r}.draw(ColorF{1, 0, 0});
+		Circle{b.p(), 200 - func(b.p()), r}.draw(ColorF{0, 0, 1});
 	}
 }

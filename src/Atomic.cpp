@@ -6,7 +6,7 @@ namespace sha
 	{
 		const double ax = x - a.p();
 		const double bx = x - b.p();
-		return (a.dist(ax + EPSILON) + b.dist(bx + EPSILON) - a.dist(ax) - b.dist(bx)) / EPSILON;
+		return a.derivate(ax) + b.derivate(bx);
 	}
 	
 	double arc_length(double s, double t, const Atomic& a, const Atomic& b)
@@ -29,7 +29,7 @@ namespace sha
 		vari = v;
 	}
 
-	void Atomic::force(value_t f, const Atomic& b)
+	double Atomic::force(value_t f, const Atomic& b)
 	{
 		value_t s = pos;
 		value_t t = pos + f;
@@ -45,20 +45,7 @@ namespace sha
 		const auto q = (s + t) / 2;
 		const auto d = slope(q, *this, b);
 
-		pos = q - d;
-	}
-
-	Atomic::value_t Atomic::length(value_t a, value_t b) const
-	{
-		auto integ = [&](value_t x) -> value_t
-		{
-			const float df = derivate(x);
-			const float b = 1.0 + df * df;
-			const float y = 2.0f / 3.0f * b * std::sqrt(b);
-			return y;
-		};
-
-		return std::abs(integ(b)) + std::abs(integ(a));
+		return q - pos - d;
 	}
 
 	Atomic::value_t Atomic::dist(value_t x) const
