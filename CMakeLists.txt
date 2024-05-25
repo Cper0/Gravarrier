@@ -6,6 +6,8 @@ project(Phys)
 add_executable(Phys
 	src/main.cpp
 	src/Atomic.cpp
+	src/Curve.cpp
+	src/Atomic2D.cpp
 )
 
 target_include_directories(Phys PUBLIC include)
