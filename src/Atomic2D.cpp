@@ -16,33 +16,60 @@ namespace sha
 		variance = v;
 	}
 
-	Curve Atomic2D::cut(Vec2 p, Vec2 d) const
+	double Atomic2D::f(Vec2 v) const
 	{
-		const Vec2 n = p - pos;
-		const Vec2 h = d * d.dot(-n) / (d.lengthSq() + EPSILON);
-		const Vec2 v = -n - h;
+		const double x = v.x - pos.x;
+		const double y = v.y - pos.y;
+		return height * std::exp(-(x*x + y*y) / variance);
+	}
 
-		//方向
-		const double f = h.dot(d) / (h.length() * d.length() + EPSILON);
+	double Atomic2D::synth_f(Vec2 v, const std::vector<Atomic2D>& entries)
+	{
+		double z = 0;
+		for(const auto& e : entries) z += e.f(v);
+		return z;
+	}
 
-		const double curve_p = f * h.length();
-		const double curve_h = height * std::exp(-v.lengthSq()/variance);
-		return Curve(curve_p, curve_h, variance);
+	double Atomic2D::arc_length(Vec2 a, Vec2 b, const std::vector<Atomic2D>& entries)
+	{
+		constexpr int DIV = 30;
+
+		double area = 0;
+
+		const Vec2 e = b.movedBy(-a).normalize();
+		const double k = b.movedBy(-a).length();
+		for(int i = 0; i < DIV; i++)
+		{
+			const Vec2 s = a + e * k * i / DIV;
+			const Vec2 t = a + e * k * (i + 1) / DIV;
+
+			const double l = Math::Sqrt2 * k / DIV;
+			const double sz = synth_f(s, entries);
+			const double tz = synth_f(t, entries);
+
+			area += l * (sz + tz) / 2;
+		}
+
+		return area;
 	}
 
 	Vec2 Atomic2D::force(Vec2 p, Vec2 f, const std::vector<Atomic2D>& entries)
 	{
-		std::vector<sha::Curve> curves = {};
-		const Vec2 norm = f.normalize();
-		for(int i = 0; i < entries.size(); i++)
+		Vec2 s = p;
+		Vec2 t = p + f;
+		for(int i = 0; i < 10; i++)
 		{
-			curves.emplace_back(entries[i].cut(p, norm));
+			const Vec2 m = (s + t) / 2.0;
+			const double L = arc_length(p, m, entries);
+
+			if(L > f.length()) t = m;
+			else s = m;
 		}
 
-		const double new_p = sha::Curve::move_to(0, f.length(), curves);
-		const Vec2 v = new_p * norm;
-		std::cout << "(" << v.x << "," << v.y << ")" << std::endl;
+		const Vec2 n = (s + t) / 2;
+		const double dx = (synth_f(n.movedBy(EPSILON, 0), entries) - synth_f(n, entries)) / EPSILON;
+		const double dy = (synth_f(n.movedBy(0, EPSILON), entries) - synth_f(n, entries)) / EPSILON;
 
-		return new_p * norm;
+		return n - p - Vec2{dx, dy};
 	}
 }

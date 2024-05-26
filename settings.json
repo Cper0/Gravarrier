@@ -1,10 +1,10 @@
 {
-	"a_force": 100,
-	"a_height": 100,
-	"a_delta": 3,
+	"a_force": 0.5,
+	"a_height": 10,
+	"a_delta": 10,
 	"a_x":300,
-	"b_force": 1,
-	"b_height":10,
-	"b_delta":3,
+	"b_force": 0.001,
+	"b_height": 10,
+	"b_delta":10,
 	"b_x":100
 }
