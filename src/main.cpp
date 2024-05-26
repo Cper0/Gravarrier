@@ -51,8 +51,8 @@ void Main()
 		b.moveBy(b_motion);
 		atomic[1].moveBy(b_motion);
 
-		Circle{atomic[0].p().x - cam.x, atomic[0].p().y, std::sqrt(ad) * 3}.draw(ColorF{1, 0, 0});
-		Circle{atomic[1].p().x - cam.x, atomic[1].p().y, std::sqrt(bd) * 3}.draw(ColorF{0, 0, 1});
+		Circle{atomic[0].p().x - cam.x, atomic[0].p().y, std::sqrt(ad) * 1}.draw(ColorF{1, 0, 0});
+		Circle{atomic[1].p().x - cam.x, atomic[1].p().y, std::sqrt(bd) * 1}.draw(ColorF{0, 0, 1});
 
 		font(U"(", static_cast<int>(a.x), U",", static_cast<int>(a.y), U")").draw(0,0);
 		font(U"(", static_cast<int>(b.x), U",", static_cast<int>(b.y), U")").draw(0,50);
